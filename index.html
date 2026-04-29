@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SagaMind Platform | Khám Phá Lượng Tử</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #05050a;
+            --glass-bg: rgba(20, 25, 40, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-gold: #ffd700;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Cinematic Backdrop */
+        .cinematic-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
+            overflow: hidden;
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(var(--neon-cyan) 1px, transparent 1px),
+                radial-gradient(var(--neon-purple) 1px, transparent 1px);
+            background-size: 50px 50px, 80px 80px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.15;
+            animation: moveParticles 60s linear infinite;
+        }
+
+        @keyframes moveParticles {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-50px) scale(1.1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* Typography */
+        .title-font { font-family: 'Orbitron', sans-serif; }
+        .text-glow-cyan { text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .text-glow-purple { text-shadow: 0 0 10px rgba(188, 19, 254, 0.5); }
+
+        /* HUD & Top Bar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 10;
+        }
+
+        .hud-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .level-badge {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .xp-container {
+            width: 200px;
+        }
+
+        .xp-label {
+            display: flex; justify-content: space-between;
+            font-size: 0.8rem; margin-bottom: 4px;
+            color: var(--neon-cyan);
+        }
+
+        .xp-bar-bg {
+            width: 100%; height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px; overflow: hidden;
+        }
+
+        .xp-bar-fill {
+            height: 100%; width: 0%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: width 0.5s ease;
+        }
+
+        .inventory {
+            display: flex; gap: 0.8rem;
+        }
+
+        .inv-slot {
+            width: 45px; height: 45px;
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; color: var(--text-muted);
+            border: 1px dashed var(--glass-border);
+            transition: all 0.3s;
+        }
+
+        .inv-slot.has-item {
+            border: 1px solid var(--neon-gold);
+            color: var(--neon-gold);
+            text-shadow: 0 0 10px var(--neon-gold);
+            animation: pulseItem 2s infinite;
+        }
+
+        @keyframes pulseItem {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        /* Main Story Engine */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            z-index: 5;
+            position: relative;
+        }
+
+        .story-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .story-scene-img {
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border: 1px solid var(--glass-border);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 4rem; color: var(--neon-purple);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .story-title {
+            font-size: 2rem;
+            color: var(--neon-cyan);
+            text-align: center;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-choice:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-cyan);
+            transform: translateX(10px);
+            box-shadow: -5px 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .btn-choice i {
+            margin-right: 10px;
+            color: var(--neon-cyan);
+        }
+
+        /* AI Persona Hub */
+        .ai-hub-toggle {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.4);
+            transition: transform 0.3s;
+        }
+
+        .ai-hub-toggle:hover { transform: scale(1.1); }
+
+        .ai-chat-window {
+            position: fixed;
+            bottom: 100px; right: 30px;
+            width: 350px; height: 500px;
+            display: flex; flex-direction: column;
+            z-index: 99;
+            transform-origin: bottom right;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ai-chat-window.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .npc-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--neon-purple);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .msg {
+            max-width: 85%; padding: 0.8rem 1rem; border-radius: 12px;
+            font-size: 0.9rem; line-height: 1.4;
+        }
+
+        .msg.npc {
+            background: rgba(188, 19, 254, 0.1);
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+        }
+
+        .msg.player {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--glass-border);
+            display: flex; gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1; background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px; padding: 0.5rem;
+            color: #fff; outline: none;
+        }
+        .chat-input:focus { border-color: var(--neon-purple); }
+
+        .btn-send {
+            background: transparent; border: none;
+            color: var(--neon-purple); cursor: pointer; font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        .btn-send:hover { color: #fff; }
+
+        /* Quest Popup Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1; pointer-events: all;
+        }
+
+        .quest-card {
+            width: 400px; padding: 2rem;
+            text-align: center;
+            transform: translateY(50px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 3px solid var(--neon-gold);
+        }
+
+        .modal-overlay.active .quest-card { transform: translateY(0); }
+
+        .quest-icon { font-size: 3rem; color: var(--neon-gold); margin-bottom: 1rem; }
+        
+        .quest-input {
+            width: 100%; padding: 0.8rem; margin: 1.5rem 0;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
+            border-radius: 8px; color: #fff; text-align: center;
+            font-size: 1.1rem; outline: none;
+        }
+        .quest-input:focus { border-color: var(--neon-gold); }
+
+        .btn-action {
+            padding: 0.8rem 2rem; background: rgba(255, 215, 0, 0.2);
+            border: 1px solid var(--neon-gold); color: var(--neon-gold);
+            border-radius: 8px; cursor: pointer; font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-action:hover { background: var(--neon-gold); color: #000; }
+
+        /* Dashboard (Giáo viên / Insight) */
+        .btn-dashboard {
+            position: fixed; top: 20px; right: 20px;
+            background: transparent; border: none; color: var(--text-muted);
+            font-size: 1.5rem; cursor: pointer; z-index: 20; transition: color 0.3s;
+        }
+        .btn-dashboard:hover { color: var(--neon-cyan); }
+
+        .dashboard-panel {
+            position: fixed; top: 0; right: -400px; width: 400px; height: 100vh;
+            background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            z-index: 100; padding: 2rem;
+            transition: right 0.4s ease;
+        }
+        .dashboard-panel.active { right: 0; }
+        .dash-close { position: absolute; top: 20px; right: 20px; cursor: pointer; color: #fff; font-size: 1.5rem; }
+
+        .chart-container { margin-top: 2rem; display: flex; align-items: flex-end; gap: 10px; height: 150px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;}
+        .bar { flex: 1; background: var(--neon-cyan); border-radius: 4px 4px 0 0; position: relative; transition: height 1s; }
+        .bar::after { content: attr(data-label); position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: var(--text-muted); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 1rem; }
+            .story-container { padding: 1.5rem; }
+            .ai-chat-window { width: 90vw; right: 5vw; bottom: 100px; }
+            .dashboard-panel { width: 100%; right: -100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background -->
+    <div class="cinematic-backdrop">
+        <div class="particles"></div>
+    </div>
+
+    <!-- HUD / Header -->
+    <header>
+        <div class="hud-profile glass">
+            <div class="level-badge title-font" id="level-display">1</div>
+            <div class="xp-container">
+                <div class="xp-label title-font">
+                    <span>KINH NGHIỆM</span>
+                    <span id="xp-text">0/100</span>
+                </div>
+                <div class="xp-bar-bg">
+                    <div class="xp-bar-fill" id="xp-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="inventory glass" style="padding: 0.5rem 1rem;">
+            <div class="inv-slot" id="inv-slot-1"><i class="fa-solid fa-cube"></i></div>
+            <div class="inv-slot" id="inv-slot-2"><i class="fa-solid fa-key"></i></div>
+            <div class="inv-slot" id="inv-slot-3"><i class="fa-solid fa-book-journal-whills"></i></div>
+        </div>
+    </header>
+
+    <!-- Main Story Interface -->
+    <main>
+        <div class="story-container glass" id="story-board">
+            <div class="story-scene-img" id="scene-image">
+                <i class="fa-solid fa-atom"></i>
+            </div>
+            <h1 class="story-title title-font text-glow-cyan" id="scene-title">Khởi Tạo Hệ Thống</h1>
+            <p class="story-text" id="scene-desc">Đang tải dữ liệu mô phỏng không thời gian...</p>
+            
+            <div class="choices-container" id="choices-box">
+                <!-- Buttons injected via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Persona Hub (Einstein NPC) -->
+    <button class="ai-hub-toggle glass" onclick="toggleChat()" title="Trợ lý AI">
+        <i class="fa-solid fa-robot"></i>
+    </button>
+
+    <div class="ai-chat-window glass" id="ai-chat">
+        <div class="chat-header">
+            <div class="npc-avatar"><i class="fa-solid fa-brain" style="color:#fff"></i></div>
+            <div>
+                <h3 class="title-font" style="font-size:1rem; color:var(--neon-purple)">A.I Einstein</h3>
+                <span style="font-size:0.7rem; color:var(--text-muted)">Cố vấn lượng tử</span>
+            </div>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="msg npc">Chào mừng. Tôi là ảnh ảo của Albert Einstein. Cậu cần gợi ý gì cho bài toán không thời gian này?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Hỏi về lượng tử, cờ vua, lịch sử..." onkeypress="handleEnter(event)">
+            <button class="btn-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Quest Popup -->
+    <div class="modal-overlay" id="quest-modal">
+        <div class="quest-card glass">
+            <i class="fa-solid fa-hourglass-half quest-icon"></i>
+            <h2 class="title-font text-glow-gold" style="color:var(--neon-gold); margin-bottom:10px;" id="quest-title">Nhiệm Vụ Đột Xuất</h2>
+            <p id="quest-desc" style="font-size:0.9rem">Giải mã tọa độ trước khi cổng lượng tử đóng lại!</p>
+            <input type="text" class="quest-input" id="quest-answer" placeholder="Nhập đáp án...">
+            <button class="btn-action" onclick="submitQuest()">KÍCH HOẠT</button>
+            <p id="quest-feedback" style="margin-top:10px; font-size:0.8rem; color:#ff4444; display:none;">Mã sai, thử lại!</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Insight -->
+    <button class="btn-dashboard" onclick="toggleDashboard()"><i class="fa-solid fa-chart-simple"></i></button>
+    <div class="dashboard-panel glass" id="dashboard">
+        <i class="fa-solid fa-xmark dash-close" onclick="toggleDashboard()"></i>
+        <h2 class="title-font" style="color:var(--neon-cyan); margin-bottom:20px;">Insight Giảng Viên</h2>
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">Phân tích tương tác lộ trình học:</p>
+        <div style="font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>Tổng lượt lựa chọn:</span> <strong id="dash-clicks">0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>Lần giải đố đúng:</span> <strong id="dash-quests">0</strong>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div class="bar" style="height: 40%;" data-label="Khoa học"></div>
+            <div class="bar" style="height: 70%;" data-label="Lịch sử"></div>
+            <div class="bar" style="height: 30%; background:var(--neon-purple)" data-label="Bỏ qua"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE MANAGEMENT ---
+        const GAME_KEY = 'sagamind_save_v1';
+        
+        let state = {
+            currentSceneId: 'start',
+            xp: 0,
+            level: 1,
+            inventory: [], // ['cube', 'key', 'book']
+            history: [],
+            stats: { clicks: 0, questsSolved: 0 }
+        };
+
+        const SCENES = {
+            'start': {
+                title: 'Phòng Thí Nghiệm Lượng Tử',
+                imgIcon: 'fa-atom',
+                desc: 'Bạn đứng trước cỗ máy thời gian Chronos. Ánh sáng neon hắt lên những bản ghi chép vật lý chằng chịt. Năng lượng lõi đang thiếu hụt.',
+                choices: [
+                    { text: 'Kiểm tra bảng mạch hạt nhân', next: 'circuit', icon: 'fa-microchip' },
+                    { text: 'Đọc cuốn nhật ký lịch sử trên bàn', next: 'journal', icon: 'fa-book' }
+                ]
+            },
+            'circuit': {
+                title: 'Sự Cố Vi Mạch',
+                imgIcon: 'fa-bolt',
+                desc: 'Bạn phát hiện một bảng mạch lượng tử bị ngắt kết nối. Để kích hoạt, bạn cần giải mã một phương trình cổ.',
+                choices: [
+                    { text: 'Kích hoạt Quest Giải Mã', action: 'trigger_quest', questId: 'q1', icon: 'fa-puzzle-piece' },
+                    { text: 'Quay lại', next: 'start', icon: 'fa-arrow-left' }
+                ]
+            },
+            'journal': {
+                title: 'Nhật Ký Cổ',
+                imgIcon: 'fa-scroll',
+                desc: 'Cuốn nhật ký ghi lại cuộc gặp gỡ giữa một nhà khoa học và một đại kiện tướng cờ vua năm 1920. Nó có nhắc đến "Bước nhảy của Mã".',
+                choices: [
+                    { text: 'Lấy cuốn nhật ký', action: 'get_item', item: 'book', next: 'start', icon: 'fa-hand-holding' },
+                    { text: 'Bỏ qua', next: 'start', icon: 'fa-xmark' }
+                ]
+            },
+            'portal_open': {
+                title: 'Cổng Thời Gian Mở',
+                imgIcon: 'fa-door-open',
+                desc: 'Năng lượng bùng nổ! Không gian uốn cong trước mắt bạn. Một chiều không gian mới mở ra, kết nối hiện tại và quá khứ.',
+                choices: [
+                    { text: 'Bước vào chiều không gian', next: 'end_demo', icon: 'fa-person-walking-arrow-right' }
+                ]
+            },
+            'end_demo': {
+                title: 'Chương 1 Hoàn Thành',
+                imgIcon: 'fa-trophy',
+                desc: 'Chúc mừng bạn đã vượt qua thử thách đầu tiên. Hệ thống đang tải Chương 2...',
+                choices: [
+                    { text: 'Chơi lại từ đầu', action: 'reset', icon: 'fa-rotate-right' }
+                ]
+            }
+        };
+
+        const QUESTS = {
+            'q1': {
+                title: 'Phương Trình Einstein',
+                desc: 'Năng lượng (E) bằng khối lượng (m) nhân với bình phương tốc độ ánh sáng (c). Nhập công thức viết liền không dấu cách:',
+                answer: 'e=mc2',
+                rewardXP: 50,
+                rewardItem: 'key',
+                nextScene: 'portal_open'
+            }
+        };
+
+        let currentActiveQuest = null;
+
+        // --- CORE LOGIC & UI RENDER ---
+
+        function init() {
+            loadState();
+            updateHUD();
+            renderScene(state.currentSceneId);
+        }
+
+        function renderScene(sceneId) {
+            const scene = SCENES[sceneId];
+            if (!scene) return;
+
+            // Update state
+            state.currentSceneId = sceneId;
+            saveState();
+
+            // DOM Elements
+            const board = document.getElementById('story-board');
+            const title = document.getElementById('scene-title');
+            const desc = document.getElementById('scene-desc');
+            const choicesBox = document.getElementById('choices-box');
+            const img = document.getElementById('scene-image');
+
+            // Animation out
+            board.style.opacity = '0';
+            board.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                // Update content safely
+                img.innerHTML = `<i class="fa-solid ${scene.imgIcon}"></i>`;
+                title.textContent = scene.title;
+                desc.textContent = scene.desc;
+                
+                // Clear choices
+                choicesBox.innerHTML = '';
+                
+                scene.choices.forEach(choice => {
+                    // Check conditions for showing choices (e.g., if already has item)
+                    if (choice.action === 'get_item' && state.inventory.includes(choice.item)) {
+                        return; // hide option if already acquired
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-choice';
+                    btn.innerHTML = `<i class="fa-solid ${choice.icon}"></i> ${choice.text}`;
+                    
+                    btn.onclick = () => {
+                        state.stats.clicks++;
+                        updateDashboard();
+
+                        if (choice.action === 'trigger_quest') {
+                            showQuest(choice.questId);
+                        } else if (choice.action === 'get_item') {
+                            gainItem(choice.item);
+                            gainXP(20);
+                            renderScene(choice.next);
+                        } else if (choice.action === 'reset') {
+                            resetGame();
+                        } else {
+                            renderScene(choice.next);
+                        }
+                    };
+                    choicesBox.appendChild(btn);
+                });
+
+                // Animation in
+                board.style.opacity = '1';
+                board.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        // --- GAMIFICATION MECHANICS ---
+
+        function gainXP(amount) {
+            state.xp += amount;
+            if (state.xp >= 100) {
+                state.level++;
+                state.xp -= 100;
+                addChatMsg('Hệ thống', `Chúc mừng! Bạn đã đạt Cấp độ ${state.level}`, 'npc');
+            }
+            updateHUD();
+            saveState();
+        }
+
+        function gainItem(itemKey) {
+            if (!state.inventory.includes(itemKey)) {
+                state.inventory.push(itemKey);
+                addChatMsg('Hệ thống', `Bạn nhận được vật phẩm mới!`, 'npc');
+            }
+            updateHUD();
+            saveState();
+        }
+
+        function updateHUD() {
+            document.getElementById('level-display').textContent = state.level;
+            document.getElementById('xp-text').textContent = `${state.xp}/100`;
+            document.getElementById('xp-bar').style.width = `${state.xp}%`;
+
+            // Inventory Mapping (1: cube, 2: key, 3: book)
+            const slotMap = { 'cube': 1, 'key': 2, 'book': 3 };
+            
+            // Reset visual slots
+            [1, 2, 3].forEach(i => document.getElementById(`inv-slot-${i}`).classList.remove('has-item'));
+            
+            state.inventory.forEach(item => {
+                if(slotMap[item]) {
+                    document.getElementById(`inv-slot-${slotMap[item]}`).classList.add('has-item');
+                }
+            });
+        }
+
+        // --- QUEST SYSTEM ---
+
+        function showQuest(questId) {
+            currentActiveQuest = QUESTS[questId];
+            document.getElementById('quest-title').textContent = currentActiveQuest.title;
+            document.getElementById('quest-desc').textContent = currentActiveQuest.desc;
+            document.getElementById('quest-answer').value = '';
+            document.getElementById('quest-feedback').style.display = 'none';
+            document.getElementById('quest-modal').classList.add('active');
+        }
+
+        function submitQuest() {
+            const input = document.getElementById('quest-answer').value.toLowerCase().replace(/\s/g, '');
+            if (input === currentActiveQuest.answer) {
+                // Correct
+                document.getElementById('quest-modal').classList.remove('active');
+                state.stats.questsSolved++;
+                gainXP(currentActiveQuest.rewardXP);
+                if (currentActiveQuest.rewardItem) {
+                    gainItem(currentActiveQuest.rewardItem);
+                }
+                updateDashboard();
+                renderScene(currentActiveQuest.nextScene);
+            } else {
+                // Incorrect
+                const feedback = document.getElementById('quest-feedback');
+                feedback.style.display = 'block';
+                feedback.textContent = 'Mã giải trình sai. Hãy xem xét kỹ các yếu tố!';
+                // Trigger AI hint
+                setTimeout(() => {
+                    if(!document.getElementById('ai-chat').classList.contains('active')) toggleChat();
+                    addChatMsg('Einstein', 'Gợi ý: Phương trình nổi tiếng nhất của tôi, liên hệ giữa Năng lượng và Khối lượng.', 'npc');
+                }, 1000);
+            }
+        }
+
+        // --- AI PERSONA CHAT (Keyword based logic) ---
+
+        function toggleChat() {
+            document.getElementById('ai-chat').classList.toggle('active');
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendChat();
+        }
+
+        function sendChat() {
+            const inputEl = document.getElementById('chat-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            addChatMsg('Bạn', text, 'player');
+            inputEl.value = '';
+
+            // Simulate AI processing
+            setTimeout(() => {
+                generateAIResponse(text.toLowerCase());
+            }, 800);
+        }
+
+        function addChatMsg(sender, text, type) {
+            const body = document.getElementById('chat-body');
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            
+            // Typewriter effect logic
+            if (type === 'npc') {
+                div.textContent = '';
+                body.appendChild(div);
+                body.scrollTop = body.scrollHeight;
+                
+                let i = 0;
+                const typing = setInterval(() => {
+                    div.textContent += text.charAt(i);
+                    i++;
+                    body.scrollTop = body.scrollHeight;
+                    if (i >= text.length) clearInterval(typing);
+                }, 20);
+            } else {
+                div.textContent = text;
+                body.appendChild(div);
+                body.scrollTop = body.scrollHeight;
+            }
+        }
+
+        function generateAIResponse(text) {
+            // Keyword matching logic tailored to user context (Quantum, Chess, History, AI)
+            let response = "Tôi đang phân tích dữ liệu... Cậu có thể hỏi rõ hơn về thuyết tương đối, lượng tử, cờ vua hoặc lịch sử không?";
+            
+            if (text.includes('lượng tử') || text.includes('quantum')) {
+                response = "Khoa học lượng tử là sự kỳ diệu. Trạng thái chồng chập cho phép một hạt ở nhiều nơi cùng lúc, giống như cách các kịch bản trong hệ thống này phân nhánh vậy.";
+            } else if (text.includes('cờ vua') || text.includes('khải')) {
+                response = "Cờ vua là môn thể thao của trí tuệ. Tôi nhớ đã từng chơi cờ với Oppenheimer. Việc dự đoán nước đi của đối thủ cũng như tính toán xác suất trong cơ học lượng tử.";
+            } else if (text.includes('lịch sử')) {
+                response = "Lịch sử không chỉ là những trang giấy cũ. Nó là hàm sóng của nhân loại đã sụp đổ thành hiện thực. Hãy tìm cuốn nhật ký trên bàn, nó chứa đựng bí mật quá khứ.";
+            } else if (text.includes('ai') || text.includes('aiva') || text.includes('quang')) {
+                response = "Chào anh Quang. AI là cầu nối giữa thuật toán và ý thức con người. Hệ thống được bảo mật mã hóa end-to-end, không lưu trữ thông tin cá nhân ngoài môi trường cục bộ này.";
+            } else if (text.includes('gợi ý') || text.includes('help')) {
+                response = "Hãy chú ý đến các vật phẩm xung quanh. Phương trình e=mc2 là chìa khóa mở cánh cửa không thời gian.";
+            }
+
+            addChatMsg('Einstein', response, 'npc');
+        }
+
+        // --- DASHBOARD ---
+        function toggleDashboard() {
+            document.getElementById('dashboard').classList.toggle('active');
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            document.getElementById('dash-clicks').textContent = state.stats.clicks;
+            document.getElementById('dash-quests').textContent = state.stats.questsSolved;
+        }
+
+        // --- LOCAL STORAGE ---
+        function saveState() {
+            localStorage.setItem(GAME_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(GAME_KEY);
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Lỗi đọc file save");
+                }
+            }
+        }
+
+        function resetGame() {
+            localStorage.removeItem(GAME_KEY);
+            state = { currentSceneId: 'start', xp: 0, level: 1, inventory: [], history: [], stats: { clicks: 0, questsSolved: 0 } };
+            init();
+        }
+
+        // Start
+        window.onload = init;
+
+    </script>
+</body>
+</html>
